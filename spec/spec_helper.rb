@@ -1,4 +1,5 @@
 require_relative '../lib/bencoding_decoder'
+require_relative '../lib/bencoding_encoder'
 
 RSpec.configure do |config|
 	# Use color in STDOUT
