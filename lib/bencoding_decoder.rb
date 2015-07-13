@@ -39,6 +39,9 @@ private
 	def decode_dict
 		@string = @string[1..-1]
 		res_dict = {}
+
+		return res_dict if @string.nil?
+
 		while @string.length > 0 and @string[0] != 'e'
 			key = decode_string
 			res_dict[key] = next_element
@@ -58,7 +61,7 @@ private
 			when 'd'
 				return :dict
 			else
-				raise "Can't decode string, wrong format."
+				raise "Can't determine type, wrong format."
 		end
 	end
 
