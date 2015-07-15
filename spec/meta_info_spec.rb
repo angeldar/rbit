@@ -27,10 +27,15 @@ describe MetaInfo do
     expect(meta.pieces[-1].length).to eq(20)
   end
 
-  it 'should print keys' do
+  it 'should return info_hash' do
     meta.read File.join(File.dirname(__FILE__), './files/test.torrent')
-    puts "\n\n>> keys:"
-    puts meta.data.keys
+    expect(meta.info_hash).to eq('d11e610d510dff4c3b807cf4f041d71bd49ae7eb')
   end
+
+  # it 'should print keys' do
+  #   meta.read File.join(File.dirname(__FILE__), './files/test.torrent')
+  #   puts "\n\n>> keys:"
+  #   puts meta.data.keys
+  # end
 
 end
