@@ -27,7 +27,7 @@ class MetaInfo
   end
 
   def info_hash
-    Digest::SHA1.hexdigest(@encoder.encode @data['info']) 
+    Digest::SHA1.digest(@encoder.encode @data['info']) 
   end
 
 end
