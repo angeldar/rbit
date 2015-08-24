@@ -82,3 +82,6 @@ $RECYCLE.BIN/
 
 # Torrent files
 *.torrent
+
+# Sublime files
+*.sublime-*
