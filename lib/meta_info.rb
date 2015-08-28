@@ -26,6 +26,10 @@ class MetaInfo
     @data['announce'] if not @data.nil?
   end
 
+  def piece_length
+    @data['info']['piece length'] if not @data.nil?
+  end
+
   def info_hash
     Digest::SHA1.digest(@encoder.encode @data['info'])
   end

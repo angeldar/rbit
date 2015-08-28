@@ -33,6 +33,11 @@ describe MetaInfo do
     expect(meta.info_hash_hex).to eq('d11e610d510dff4c3b807cf4f041d71bd49ae7eb')
   end
 
+  it 'should return piece length' do
+    meta.read File.join(File.dirname(__FILE__), './files/test.torrent')
+    expect(meta.piece_length).to eq(262144)
+  end
+
   # it 'should print keys' do
   #   meta.read File.join(File.dirname(__FILE__), './files/test.torrent')
   #   puts "\n\n>> keys:"
