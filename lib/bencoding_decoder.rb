@@ -58,7 +58,8 @@ private
 			when 'd'
 				return :dict
 			else
-				raise "Can't decode string, wrong format."
+				return nil
+				# raise "Can't decode string, wrong format."
 		end
 	end
 
@@ -74,7 +75,8 @@ private
 				when :dict
 					decode_dict
 				else
-					raise "Can't decode string, wrong format."
+					print "Wrong character while decode string: \n\n#{@string}\n\n"
+					# raise "Can't decode string, wrong format."
 			end
 	end
 

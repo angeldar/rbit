@@ -9,10 +9,11 @@ class Client
     @debug = true
 
     meta = MetaInfo.new
-    meta.read 'test.torrent'
+    meta.read 'test4.torrent'
+
     @announce_url = URI.encode meta.announce
     @info_hash    = meta.info_hash
-    @peer_id    = '-DE13B0-K9I3wyKnA947' #generate_peer_id
+    @peer_id    = '-DE13B0-W-uYy2y2Dzpd' #generate_peer_id
     @port       = 6889
     @uploaded   = 0
     @downloaded = 0
@@ -34,9 +35,8 @@ class Client
     response
   end
 
-  # TODO: Refactor to parse multiple ip-s.
   def binstring_to_ip(binstring)
-    raise "ERROR: Can't parse binstring, the length is not multiple of 8."if binstring.length % 8 != 0
+    raise "ERROR: Can't parse binstring, the length is not multiple of 8." if binstring.length % 8 != 0
 
     bin_addreses = binstring.scan(/.{48}/)
 
@@ -52,14 +52,27 @@ class Client
   end
 
   def create_request
-    uri = URI(@announce_url)
+    uri = URI.parse(@announce_url)
+
     params = {
-      :info_hash => URI.encode(@info_hash), #'%' + @info_hash.scan(/.{2}|.+/).join('%'),
-      :peer_id   => @peer_id,
+      :info_hash => URI.encode(@info_hash),
+      :peer_id => @peer_id,
       :compact => '1',
-      :numwant => 20
+      :numwant => 20,
+
+      :port => 50527,
+      :uploaded => 0,
+      :downloaded => 0,
+      :left => 91715004,
+      :corrupt => 0,
+      :redundant => 0,
+      :key => 'e6d94dd6',
+      :no_peer_id => 1,
+      :supportcrypto => 1,
+      :event => 'started'
     }
-    uri.query = params.map{|k, v| [k.to_s, "=", v.to_s]}.map(&:join).join('&')
+
+    uri.query = (uri.query ? uri.query + '&' : '') + params.map{|k, v| [k.to_s, "=", v.to_s]}.map(&:join).join('&')
     uri
   end
 
@@ -79,11 +92,6 @@ class Client
       puts ">> trying: #{ip}:#{port}" if @debug
       sock = TCPSocket.new(ip, port)
       sock.print request
-
-      # while line = sock.gets
-        # puts ">> line #{line}" # Print the response data until we run out of text.
-      # end
-
       resp =  sock.read(68)
       puts ">> resp: #{resp} #{resp[0].unpack('B*')[0].to_i(2)}" if not resp.nil?
 
@@ -103,9 +111,9 @@ class Client
   end
 
   def get_peers
+    puts ">> Trying to get peers" if @debug
     server_response = server_request
     bin = server_response['peers'].unpack('B*')[0]
-    # puts ">> bin: #{bin}" if @debug
     peers = binstring_to_ip bin
   end
 
@@ -122,16 +130,7 @@ def test
   peers.each do |addr, port|
     client.handshake(addr, port)
   end
-
   puts 'end'
 end
 
 test
-
-
-# Working url
-# 'http://torrent.fedoraproject.org:6969/announce?info_hash=%d1%1ea%0dQ%0d%ffL%3b%80%7c%f4%f0A%d7%1b%d4%9a%e7%eb&' +
-# 'peer_id=-DE13B0-K9I3wyKnA947&compact=1' + 
-# '&numwant=0&key=cdfde39a&event=started'))
-
-# 01010100 10011001 11011101 10010010 11001000 11010101

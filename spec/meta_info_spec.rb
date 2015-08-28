@@ -27,9 +27,10 @@ describe MetaInfo do
     expect(meta.pieces[-1].length).to eq(20)
   end
 
-  it 'should return info_hash' do
+  # In program info_hash is used instead of info_hash_hex, wich is used for testing.
+  it 'should return info_hash_hex' do
     meta.read File.join(File.dirname(__FILE__), './files/test.torrent')
-    expect(meta.info_hash).to eq('d11e610d510dff4c3b807cf4f041d71bd49ae7eb')
+    expect(meta.info_hash_hex).to eq('d11e610d510dff4c3b807cf4f041d71bd49ae7eb')
   end
 
   # it 'should print keys' do
