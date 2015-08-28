@@ -3,6 +3,17 @@ require 'socket'
 require 'net/http'
 require_relative 'meta_info'
 
+# List of id-s
+CHOKE = 0
+UNCHOKE = 1
+INTERESTED = 2
+UNINTERESTED = 3
+HAVE = 4
+BITFIELD = 5
+REQUEST = 6
+PIECE = 7
+CANCEL = 8
+
 class Client
 
   def initialize
@@ -18,6 +29,14 @@ class Client
     @uploaded   = 0
     @downloaded = 0
     @left       = 2000
+
+    # States, each dictionary contains IP as key, and bool as value
+    # Should fill after successfull handshake
+    @choked_peers
+    @interested_peers
+
+    @choked_by_peers
+    @interested_in_peers
   end
 
   def request
