@@ -39,19 +39,38 @@ class Client
     @interested_in_peers
   end
 
+  # def request
+  #   uri = create_request
+  #   puts ">> uri: #{uri}" if @debug
+  #   res = Net::HTTP.get_response(uri)
+  #   puts ">> res: #{res.body}" if @debug
+  #   res.body #if res.is_a?(Net::HTTPSuccess)
+  # end
+
+  # TODO: Rename request functions. Request should be be these peer_request function
   def request
-    uri = create_request
-    puts ">> uri: #{uri}" if @debug
-    res = Net::HTTP.get_response(uri)
-    puts ">> res: #{res.body}" if @debug
-    res.body #if res.is_a?(Net::HTTPSuccess)
+    #This message has ID 6 and a payload of length 12. The payload is 3 integer values
+    #indicating a block within a piece that the sender is interested in downloading from 
+    #the recipient. The recipient MUST only send piece messages to a sender that has
+    #already requested it, and only in accordance to the rules given above about the choke
+    #and interested states. The payload has the following structure:
+    #| Piece Index | Block Offset | Block Length |
+    length = 12
+    id = 6
+    piece_index = 0
+    block_offset = 0
+    payload = [piece_index, block_offset, meta.piece_length]
+    data = [length, id] + payload
+    message = data.map {|n| [n].pack('C')}.join
   end
 
   def server_request
     decoder = BencodingDecoder.new
-    response = decoder.decode request
-    # puts ">> resp: #{response}" if @debug
-    response
+    uri = create_request
+    puts ">> uri: #{uri}" if @debug
+    res = Net::HTTP.get_response(uri)
+    puts ">> res: #{res.body}" if @debug
+    decoder.decode res.body #if res.is_a?(Net::HTTPSuccess)
   end
 
   def binstring_to_ip(binstring)
@@ -64,7 +83,7 @@ class Client
       bytes = bin_addr.scan(/.{8}/)
       ip = bytes[0...4].map {|s| s.to_i(2)}.join('.')
       port = bytes[4..6].join('').to_i(2)
-      puts ">> addr: #{ip}:#{port}" if @debug
+      # puts ">> addr: #{ip}:#{port}" if @debug
       addreses << [ip, port]
     end
     addreses
@@ -152,4 +171,4 @@ def test
   puts 'end'
 end
 
-test
+# test
