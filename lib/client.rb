@@ -2,6 +2,7 @@ require 'CGI'
 require 'socket'
 require 'net/http'
 require_relative 'meta_info'
+require_relative 'handshake_helper'
 
 # List of id-s
 CHOKE = 0
@@ -28,26 +29,18 @@ class Client
     @port       = 6889
     @uploaded   = 0
     @downloaded = 0
-    @left       = 2000
+    @left       = 91715004
+
+    @handshake_helper = HandshakeHelper.new(@info_hash, @peer_id)
 
     # States, each dictionary contains IP as key, and bool as value
     # Should fill after successfull handshake
     @choked_peers
     @interested_peers
-
     @choked_by_peers
     @interested_in_peers
   end
 
-  # def request
-  #   uri = create_request
-  #   puts ">> uri: #{uri}" if @debug
-  #   res = Net::HTTP.get_response(uri)
-  #   puts ">> res: #{res.body}" if @debug
-  #   res.body #if res.is_a?(Net::HTTPSuccess)
-  # end
-
-  # TODO: Rename request functions. Request should be be these peer_request function
   def request
     #This message has ID 6 and a payload of length 12. The payload is 3 integer values
     #indicating a block within a piece that the sender is interested in downloading from 
@@ -68,9 +61,9 @@ class Client
     decoder = BencodingDecoder.new
     uri = create_request
     puts ">> uri: #{uri}" if @debug
-    res = Net::HTTP.get_response(uri)
-    puts ">> res: #{res.body}" if @debug
-    decoder.decode res.body #if res.is_a?(Net::HTTPSuccess)
+    resp = Net::HTTP.get_response(uri)
+    puts ">> server resp: #{resp.body}" if @debug
+    decoder.decode resp.body #if res.is_a?(Net::HTTPSuccess)
   end
 
   def binstring_to_ip(binstring)
@@ -96,12 +89,12 @@ class Client
       :info_hash => URI.encode(@info_hash),
       :peer_id => @peer_id,
       :compact => '1',
-      :numwant => 20,
+      :numwant => 1,
 
-      :port => 50527,
-      :uploaded => 0,
-      :downloaded => 0,
-      :left => 91715004,
+      :port => @port,
+      :uploaded => @uploaded,
+      :downloaded => @downloaded,
+      :left => @left,
       :corrupt => 0,
       :redundant => 0,
       :key => 'e6d94dd6',
@@ -114,38 +107,8 @@ class Client
     uri
   end
 
-  def handshake(ip, port)
-    params = {
-      :name_length => 19,
-      :protocol_name => 'BitTorrent protocol',
-      :reserved => 0,
-      :info_hash => @info_hash,
-      :peer_id => @peer_id
-    }
-
-    request = [params[:name_length]].pack('C') + params[:protocol_name] +
-      [params[:reserved]].pack('C') * 8 + params[:info_hash] +  params[:peer_id]
-
-    begin
-      puts ">> trying: #{ip}:#{port}" if @debug
-      sock = TCPSocket.new(ip, port)
-      sock.print request
-      resp =  sock.read(68)
-      puts ">> resp: #{resp} #{resp[0].unpack('B*')[0].to_i(2)}" if not resp.nil?
-
-      # TODO: split resp by logical parts.
-
-      sock.close
-    rescue Errno::ETIMEDOUT
-      p 'timeout'
-    rescue Errno::ECONNRESET
-      p 'econnreset'
-    rescue Errno::ECONNREFUSED
-      p 'econnrefused'
-    rescue Errno::EADDRNOTAVAIL
-      p 'eaddrnotavail'
-    end
-
+  def handshake(addr, port)
+    @handshake_helper.handshake(addr, port)
   end
 
   def get_peers
@@ -166,9 +129,10 @@ def test
   client = Client.new
   peers = client.get_peers
   peers.each do |addr, port|
-    client.handshake(addr, port)
+    response = client.handshake(addr, port)
+    puts response
   end
   puts 'end'
 end
 
-# test
+test
